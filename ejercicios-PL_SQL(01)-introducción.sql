@@ -44,7 +44,7 @@ BEGIN
 END;
   
 
-7.- Escribir un bloque PL/SQL que muestre el número de ciclistas. Guardarlo en un fichero
+/*7.- Escribir un bloque PL/SQL que muestre el número de ciclistas. Guardarlo en un fichero*/
 
 CREATE TABLE ciclista(
     dorsal integer,

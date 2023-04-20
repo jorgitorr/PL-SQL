@@ -46,14 +46,117 @@ END;
 /*3) Escribir un programa que reciba una cadena como parámeto ('&cadena') y visualice el apellido y el número de empleado de todos los 
 empleados cuyo apellido contenga la cadena especificada. Al finalizar visualizar el número de empleados mostrados.*/
 
+/* es que contenga la cadena no que sea la cadena*/
+DECLARE
+    numero_empleado INT := 0;
+	cadena VARCHAR2(50):= 'SÁNCHEZ';
+	nombre_empleado EMPLE.APELLIDO%type;
+	numero_empleados INT:=1;
 
+	CURSOR apellido_cadena IS
+        SELECT e.APELLIDO, COUNT(e.APELLIDO)
+        FROM EMPLE e, DEPART d
+        WHERE e.DEPT_NO = d.DEPT_NO AND e.APELLIDO LIKE cadena
+        GROUP BY e.APELLIDO;
+BEGIN
+    OPEN apellido_cadena;
+    LOOP
+    	FETCH apellido_cadena INTO nombre_empleado, numero_empleados;
+		EXIT WHEN apellido_cadena%NOTFOUND;
+		DBMS_OUTPUT.PUT_LINE(nombre_empleado || ' número de empleados con ese nombre: ' || numero_empleados);
+		numero_empleados = numero_empleados+1;
+    END LOOP;
+	CLOSE apellido_cadena;
+END;
 
 /*4) Escribir un programa que visualice el apellido y el salario de los cinco empleados que tienen el salario más alto.
    Nota: En el SELECT asociado al cursor NO debe limitarse el número de filas con %ROWNUM*/
+   
+DECLARE
+	cont INT := 1;
+	CURSOR emple_mas_salario(num_dept INT) IS
+        SELECT e.APELLIDO, e.SALARIO
+        FROM EMPLE e
+        WHERE e.DEPT_NO = num_dept
+        ORDER BY e.SALARIO;
+
+	apellido_empleados EMPLE.APELLIDO%type;
+	salario_empleados EMPLE.SALARIO%type;
+BEGIN
+   OPEN emple_mas_salario(20);
+    LOOP
+    	FETCH emple_mas_salario INTO apellido_empleados, salario_empleados;
+		EXIT WHEN emple_mas_salario%NOTFOUND;
+		DBMS_OUTPUT.PUT_LINE(apellido_empleados || ' ' || salario_empleados||'$');
+    END LOOP;
+	CLOSE emple_mas_salario;
+	OPEN emple_mas_salario(30);
+    LOOP
+    	FETCH emple_mas_salario INTO apellido_empleados, salario_empleados;
+		EXIT WHEN emple_mas_salario%NOTFOUND;
+		DBMS_OUTPUT.PUT_LINE(apellido_empleados || ' ' || salario_empleados||'$');
+    END LOOP;
+   CLOSE emple_mas_salario; 
+END;
+
+
+/*HECHO CON ROWTYPE: PARA ASIGNAR EL MISMO TIPO A LAS VARIABLES QUE LO QUE DEVUELVE EL CURSOR*/
+
+DECLARE
+	CURSOR emple_mas_salario(num_dept INT) IS
+        SELECT e.APELLIDO, e.SALARIO
+        FROM EMPLE e
+        WHERE e.DEPT_NO = num_dept
+        ORDER BY e.SALARIO;
+
+	empleados emple_mas_salario%ROWTYPE;
+BEGIN
+   OPEN emple_mas_salario(20);
+    LOOP
+    	FETCH emple_mas_salario INTO empleados;
+		EXIT WHEN emple_mas_salario%NOTFOUND;
+		DBMS_OUTPUT.PUT_LINE(empleados.APELLIDO ||' '||empleados.SALARIO ||'$');
+    END LOOP;
+	CLOSE emple_mas_salario;
+	OPEN emple_mas_salario(30);
+    LOOP
+    	FETCH emple_mas_salario INTO empleados;
+		EXIT WHEN emple_mas_salario%NOTFOUND;
+		DBMS_OUTPUT.PUT_LINE(empleados.APELLIDO ||' '||empleados.SALARIO ||'$');
+    END LOOP;
+   CLOSE emple_mas_salario; 
+END;
 
 
 /*5) Codificar un programa que visualice los dos empleados que ganan menos de cada oficio.
    Nota: En el SELECT asociado al cursor NO debe limitarse el número de filas con %ROWNUM */
+   
+DECLARE
+    CURSOR empleado_menor_salario(oficio_emple VARCHAR2) IS
+    	SELECT e.OFICIO, e.APELLIDO, e.SALARIO
+    	FROM EMPLE e
+    	WHERE e.OFICIO = oficio_emple
+    	ORDER BY e.SALARIO ASC;
+	empleado empleado_menor_salario%ROWTYPE;
+BEGIN
+    OPEN empleado_menor_salario('VENDEDOR');
+    	LOOP 
+    		FETCH empleado_menor_salario INTO empleado;
+            EXIT WHEN empleado_menor_salario%NOTFOUND;
+			DBMS_OUTPUT.PUT_LINE(empleado.OFICIO|| ' ' || empleado.APELLIDO||' '||empleado.SALARIO);
+    	END LOOP;
+    CLOSE empleado_menor_salario;
+	OPEN empleado_menor_salario('EMPLEADO');
+    	LOOP 
+    		FETCH empleado_menor_salario INTO empleado;
+            EXIT WHEN empleado_menor_salario%NOTFOUND;
+			DBMS_OUTPUT.PUT_LINE(empleado.OFICIO|| ' ' || empleado.APELLIDO||' '||empleado.SALARIO);
+    	END LOOP;
+    CLOSE empleado_menor_salario;
+END;
+
+
+/*NO ME DEJA USAR GROUP BY CON LA DE ARRIBA*/
 
 /*6) Escribir un programa que muestre, en formato similar a las rupturas de control o secuencia vistas en SQL*plus los siguientes datos:
 
@@ -62,8 +165,24 @@ empleados cuyo apellido contenga la cadena especificada. Al finalizar visualizar
 - Al final del listado: Número total de empleados y suma de todos los salarios.
 
   Nota: En el SELECT asociado al cursor debe recorrer simplemente las filas de la tabla de empleados/*
+/*ordenar por departamento para hacerlo en un solo cursor*/
 
+DECLARE
+    CURSOR apellido_salario IS
+    	SELECT d.DEPT_NO, e.APELLIDO, e.SALARIO
+    	FROM EMPLE e, DEPART d 
+    	WHERE e.DEPT_NO = d.DEPT_NO;
 
+	deptEmple apellido_salario%ROWTYPE;
+BEGIN
+    OPEN apellido_salario;
+    	LOOP
+         	FETCH apellido_salario INTO deptEmple;
+    		EXIT WHEN apellido_salario%NOTFOUND;
+			DBMS_OUTPUT.PUT_LINE(deptEmple.DEPT_NO || ' ' ||deptEmple.APELLIDO ||' '|| deptEmple.SALARIO);
+    	END LOOP;
+    CLOSE apellido_salario;
+END;
 /*7) Escribir un programa PL-SQL que reciba un nombre de departamento como parámetro ('&parámetro') y muestre los datos de ese departamento.
    Nota: debe emplearse un cursor con parámetros */
 

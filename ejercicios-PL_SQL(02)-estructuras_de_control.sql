@@ -162,11 +162,10 @@ BEGIN
 		nueva_altura := altura_puerto + (incremento*altura_puerto)/100;
 		DBMS_OUTPUT.PUT_LINE('altura antigua del puerto: ' || altura_puerto);
 		DBMS_OUTPUT.PUT_LINE('nueva altura del puerto: ' || nueva_altura);
+		UPDATE puerto 
+    	SET altura = nueva_altura
+    	WHERE netapa = cont;
 	END LOOP;
-
-	UPDATE puerto 
-    SET altura = nueva_altura
-    WHERE netapa = 1;
 END;
 
 
