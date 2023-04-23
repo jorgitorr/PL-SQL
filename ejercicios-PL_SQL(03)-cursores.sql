@@ -183,19 +183,100 @@ BEGIN
     	END LOOP;
     CLOSE apellido_salario;
 END;
+
 /*7) Escribir un programa PL-SQL que reciba un nombre de departamento como parámetro ('&parámetro') y muestre los datos de ese departamento.
    Nota: debe emplearse un cursor con parámetros */
 
+DECLARE
+    CURSOR datos_depart(nombre_depart VARCHAR2) IS
+    	SELECT *
+    	FROM DEPART d
+    	WHERE d.DNOMBRE = nombre_depart;
 
-/*8) Escribir un programa PL-SQL parametrizado que reciba un nombre de ciudad y dos valores de comisión y muestre el nombre de los empleados y su oficio de cada departamento de aquelos que tengan una comisión en ese rango. Solo se considerarán los departamentos localizados en la ciudad indicada.
+	departamento datos_depart%ROWTYPE;
+BEGIN
+    OPEN datos_depart('CONTABILIDAD');
+    	LOOP
+    		FETCH datos_depart INTO departamento;
+			EXIT WHEN datos_depart%NOTFOUND;
+			DBMS_OUTPUT.PUT_LINE('DNOMBRE: '||departamento.DNOMBRE||', DEPT_NO: '||departamento.DEPT_NO||', LOC: '||departamento.LOC);
+    	END LOOP;
+	CLOSE datos_depart;
+END;
+
+
+/*8) Escribir un programa PL-SQL parametrizado que reciba un nombre de ciudad y 
+dos valores de comisión y muestre el nombre de los empleados y su oficio de cada 
+departamento de aquelos que tengan una comisión en ese rango. Solo se considerarán 
+los departamentos localizados en la ciudad indicada.
 
 Nota: deberán emplearse dos cursores parametrizados:
   -El primero que tenga como parámetro una ciudad
   -El segundo que tenga como parámetros un rango de comisiones y un departamento*/
 
+/*NO SE PUEDE COGER LOS MISMOS DATOS EN EL SELECT CON CURSORES*/
 
 
-/*9) Escribir un programa PL-SQL que incremente en un 10% el salario de los empleados más antiguos en todos los departamentos. Definir un cursor con la cláusula 'FOR UPDATE'*/
+DECLARE
+    CURSOR emple_ciudad(ciudad VARCHAR2) IS
+    	SELECT e.APELLIDO
+    	FROM EMPLE e, DEPART d
+    	WHERE e.DEPT_NO=d.DEPT_NO AND d.LOC = ciudad;
+
+	CURSOR oficio_depart(min_comision NUMBER, max_comision NUMBER, depart NUMBER) IS
+		SELECT e.OFICIO, e.APELLIDO
+		FROM DEPART d, EMPLE e
+		WHERE d.DEPT_NO = e.DEPT_NO AND d.DEPT_NO = depart AND e.COMISION BETWEEN min_comision AND max_comision; 
+	
+	apellido emple_ciudad%ROWTYPE;
+	oficio oficio_depart%ROWTYPE; 
+BEGIN
+	OPEN emple_ciudad('BARCELONA');
+		LOOP
+		FETCH emple_ciudad INTO apellido;
+		EXIT WHEN emple_ciudad%NOTFOUND;
+		END LOOP;
+	CLOSE emple_ciudad;
+
+
+	OPEN oficio_depart(50000,70000,30);
+		LOOP
+		FETCH oficio_depart INTO oficio;
+		EXIT WHEN oficio_depart%NOTFOUND;
+		END LOOP;
+	CLOSE oficio_depart;
+
+	IF (apellido.APELLIDO=oficio.APELLIDO) THEN
+		DBMS_OUTPUT.PUT_LINE(apellido.APELLIDO ||' '||oficio.OFICIO);
+	ELSE
+        DBMS_OUTPUT.PUT_LINE('No coincide el empleado con su departamento o con la comision indicada');
+	END IF;
+END;
+
+
+/*9) Escribir un programa PL-SQL que incremente en un 10% el salario de los empleados 
+más antiguos en todos los departamentos. Definir un cursor con la cláusula 'FOR UPDATE'*/
+
+DECLARE
+    CURSOR emple_mas_antiguo IS 
+    	SELECT e.APELLIDO, e.FECHA_ALT
+    	FROM EMPLE e
+    	GROUP BY e.DEPT_NO, e.FECHA_ALT
+		ORDER BY e.DEPT_NO, e.FECHA_ALT DESC;
+	
+
+    
+    emple_mas_viejo emple_mas_antiguo%ROWTYPE;
+BEGIN
+    OPEN emple_mas_antiguo;
+	LOOP
+        FETCH emple_mas_antiguo INTO emple_mas_viejo;
+		EXIT WHEN emple_mas_antiguo%NOTFOUND;
+		DBMS_OUTPUT.PUT_LINE(emple_mas_viejo.APELLIDO||' '||emple_mas_viejo.FECHA_ALT);
+    END LOOP;
+	CLOSE emple_mas_antiguo;
+END;
+
 
 
 /*10) Escribir un programa PL-SQL parametrizado que reciba un nombre de departamento y un número positivo y que despida a ese número de empleados con menor antiguedad de ese departamento.
@@ -205,3 +286,4 @@ Nota: deberán emplearse dos cursores parametrizados:
 
 
 
+/*TERMINAR EL 6*/
