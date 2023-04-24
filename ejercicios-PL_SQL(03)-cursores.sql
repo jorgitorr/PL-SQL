@@ -116,7 +116,8 @@ BEGIN
     LOOP
     	FETCH emple_mas_salario INTO empleados;
 		cont := cont+1;
-		EXIT WHEN cont=5; //necesito poner condicion de cursor%NOTFOUND (encontrar la forma)
+		EXIT WHEN cont=5; 
+		EXIT WHEN emple_mas_salario%NOTFOUND;
 		DBMS_OUTPUT.PUT_LINE(empleados.APELLIDO ||' '||empleados.SALARIO ||'$');
     END LOOP;
 	CLOSE emple_mas_salario;
