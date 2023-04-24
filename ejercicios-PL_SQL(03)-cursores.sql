@@ -70,20 +70,20 @@ BEGIN
 END;
 
 /*4) Escribir un programa que visualice el apellido y el salario de los cinco empleados que tienen el salario más alto.
-   Nota: En el SELECT asociado al cursor NO debe limitarse el número de filas con %ROWNUM*/
+   Nota: En el SELECT asociado al cursor NO debe limitarse el número de filas con %ROWNUM
+   CORREGIRLO - HACERLO CON CONTADOR*/
    
 DECLARE
 	cont INT := 1;
-	CURSOR emple_mas_salario(num_dept INT) IS
+	CURSOR emple_mas_salario IS
         SELECT e.APELLIDO, e.SALARIO
         FROM EMPLE e
-        WHERE e.DEPT_NO = num_dept
-        ORDER BY e.SALARIO;
+        ORDER BY e.SALARIO DESC;
 
 	apellido_empleados EMPLE.APELLIDO%type;
 	salario_empleados EMPLE.SALARIO%type;
 BEGIN
-   OPEN emple_mas_salario(20);
+   OPEN emple_mas_salario;
     LOOP
     	FETCH emple_mas_salario INTO apellido_empleados, salario_empleados;
 		EXIT WHEN emple_mas_salario%NOTFOUND;
@@ -103,7 +103,8 @@ END;
 /*HECHO CON ROWTYPE: PARA ASIGNAR EL MISMO TIPO A LAS VARIABLES QUE LO QUE DEVUELVE EL CURSOR*/
 
 DECLARE
-	CURSOR emple_mas_salario(num_dept INT) IS
+	cont INT := 0;
+	CURSOR emple_mas_salario IS
         SELECT e.APELLIDO, e.SALARIO
         FROM EMPLE e
         WHERE e.DEPT_NO = num_dept
@@ -111,20 +112,14 @@ DECLARE
 
 	empleados emple_mas_salario%ROWTYPE;
 BEGIN
-   OPEN emple_mas_salario(20);
+   OPEN emple_mas_salario;
     LOOP
     	FETCH emple_mas_salario INTO empleados;
-		EXIT WHEN emple_mas_salario%NOTFOUND;
+		cont := cont+1;
+		EXIT WHEN cont=5;
 		DBMS_OUTPUT.PUT_LINE(empleados.APELLIDO ||' '||empleados.SALARIO ||'$');
     END LOOP;
 	CLOSE emple_mas_salario;
-	OPEN emple_mas_salario(30);
-    LOOP
-    	FETCH emple_mas_salario INTO empleados;
-		EXIT WHEN emple_mas_salario%NOTFOUND;
-		DBMS_OUTPUT.PUT_LINE(empleados.APELLIDO ||' '||empleados.SALARIO ||'$');
-    END LOOP;
-   CLOSE emple_mas_salario; 
 END;
 
 
