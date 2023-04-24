@@ -46,69 +46,39 @@ END;
 /*3) Escribir un programa que reciba una cadena como parámeto ('&cadena') y visualice el apellido y el número de empleado de todos los 
 empleados cuyo apellido contenga la cadena especificada. Al finalizar visualizar el número de empleados mostrados.*/
 
-/* es que contenga la cadena no que sea la cadena*/
+/*QUE CONTENGA LA CADENA, NO QUE SEA LA MISMA CADENA -> CORREGIDO*/
 DECLARE
     numero_empleado INT := 0;
-	cadena VARCHAR2(50):= 'SÁNCHEZ';
 	nombre_empleado EMPLE.APELLIDO%type;
 	numero_empleados INT:=1;
 
-	CURSOR apellido_cadena IS
+	CURSOR apellido_cadena(cadena VARCHAR2) IS
         SELECT e.APELLIDO, COUNT(e.APELLIDO)
         FROM EMPLE e, DEPART d
         WHERE e.DEPT_NO = d.DEPT_NO AND e.APELLIDO LIKE cadena
         GROUP BY e.APELLIDO;
 BEGIN
-    OPEN apellido_cadena;
+    OPEN apellido_cadena('SÁNCHEZ');
     LOOP
     	FETCH apellido_cadena INTO nombre_empleado, numero_empleados;
 		EXIT WHEN apellido_cadena%NOTFOUND;
 		DBMS_OUTPUT.PUT_LINE(nombre_empleado || ' número de empleados con ese nombre: ' || numero_empleados);
-		numero_empleados = numero_empleados+1;
+		numero_empleados := numero_empleados+1;
     END LOOP;
 	CLOSE apellido_cadena;
 END;
 
 /*4) Escribir un programa que visualice el apellido y el salario de los cinco empleados que tienen el salario más alto.
    Nota: En el SELECT asociado al cursor NO debe limitarse el número de filas con %ROWNUM
-   CORREGIRLO - HACERLO CON CONTADOR*/
+   CORREGIDO*/
    
-DECLARE
-	cont INT := 1;
-	CURSOR emple_mas_salario IS
-        SELECT e.APELLIDO, e.SALARIO
-        FROM EMPLE e
-        ORDER BY e.SALARIO DESC;
-
-	apellido_empleados EMPLE.APELLIDO%type;
-	salario_empleados EMPLE.SALARIO%type;
-BEGIN
-   OPEN emple_mas_salario;
-    LOOP
-    	FETCH emple_mas_salario INTO apellido_empleados, salario_empleados;
-		EXIT WHEN emple_mas_salario%NOTFOUND;
-		DBMS_OUTPUT.PUT_LINE(apellido_empleados || ' ' || salario_empleados||'$');
-    END LOOP;
-	CLOSE emple_mas_salario;
-	OPEN emple_mas_salario(30);
-    LOOP
-    	FETCH emple_mas_salario INTO apellido_empleados, salario_empleados;
-		EXIT WHEN emple_mas_salario%NOTFOUND;
-		DBMS_OUTPUT.PUT_LINE(apellido_empleados || ' ' || salario_empleados||'$');
-    END LOOP;
-   CLOSE emple_mas_salario; 
-END;
-
-
-/*HECHO CON ROWTYPE: PARA ASIGNAR EL MISMO TIPO A LAS VARIABLES QUE LO QUE DEVUELVE EL CURSOR*/
 
 DECLARE
 	cont INT := 0;
 	CURSOR emple_mas_salario IS
         SELECT e.APELLIDO, e.SALARIO
         FROM EMPLE e
-        WHERE e.DEPT_NO = num_dept
-        ORDER BY e.SALARIO;
+        ORDER BY e.SALARIO DESC;
 
 	empleados emple_mas_salario%ROWTYPE;
 BEGIN
@@ -116,9 +86,9 @@ BEGIN
     LOOP
     	FETCH emple_mas_salario INTO empleados;
 		cont := cont+1;
+		DBMS_OUTPUT.PUT_LINE(empleados.APELLIDO ||' '||empleados.SALARIO ||'$');
 		EXIT WHEN cont=5; 
 		EXIT WHEN emple_mas_salario%NOTFOUND;
-		DBMS_OUTPUT.PUT_LINE(empleados.APELLIDO ||' '||empleados.SALARIO ||'$');
     END LOOP;
 	CLOSE emple_mas_salario;
 END;
@@ -128,14 +98,9 @@ END;
    Nota: En el SELECT asociado al cursor NO debe limitarse el número de filas con %ROWNUM */
  
  /*NO LE PUEDO PASAR EL OFICIO POR PARÁMETRO, ES DIFERENTE A LO QUE PIDE EL EJERCICIO, TENGO QUE GUARDAR EL OFICIO POR EL QUE IBA
- TENEMOS DOS VARIABLES OFICIO_ANTERIO Y OFICIO_ACTUAL 
- IF(OFICIO_ANTERIOR != OFICIO_ACTUAL)
- 	IMPRIMO TODO
-	CONT:= 0;
-	
-TENER EN CUENTA QUE SOLO PUEDE HABER UN EMPLEADO EN UN OFICIO DESPUÉS DE HACERLO
-*/
- /*PONER EJEMPLOS CON PICARDÍA*/
+
+ PONERME EJEMPLOS CON PICARDÍA 
+ */
 DECLARE
     CURSOR empleado_menor_salario IS
     	SELECT e.OFICIO, e.APELLIDO, e.SALARIO
@@ -159,9 +124,7 @@ BEGIN
     END LOOP;
 END;
 
-
-
-/*NO ME DEJA USAR GROUP BY CON LA DE ARRIBA -> no se puede hacer group by si no vas a usar una funcion de grupo*/
+/*no se puede hacer GROUP BY (SE SUPONE) si no vas a usar una funcion de grupo*/
 
 /*6) Escribir un programa que muestre, en formato similar a las rupturas de control o secuencia vistas en SQL*plus los siguientes datos:
 
@@ -172,21 +135,45 @@ END;
   Nota: En el SELECT asociado al cursor debe recorrer simplemente las filas de la tabla de empleados/*
 /*ordenar por departamento para hacerlo en un solo cursor*/
 
+/*PARA HACER LEFT JOIN EN ORACLE LO HAGO CON (+) EN EL CONTRARIO AL QUE QUIERO HACERLE LEFT JOIN*/
 DECLARE
     CURSOR apellido_salario IS
     	SELECT d.DEPT_NO, e.APELLIDO, e.SALARIO
     	FROM EMPLE e, DEPART d 
     	WHERE e.DEPT_NO = d.DEPT_NO;
 
-	deptEmple apellido_salario%ROWTYPE;
+	CURSOR departamento_salario IS
+        SELECT d.DEPT_NO, SUM(e.salario) sumaSalario
+        FROM DEPART d, EMPLE e
+        WHERE d.DEPT_NO = e.DEPT_NO
+        GROUP BY d.DEPT_NO
+        ORDER BY d.DEPT_NO ASC;
+
+	CURSOR total_salario IS
+        SELECT e.APELLIDO, e.salario
+        FROM EMPLE e 
+        ORDER BY e.APELLIDO DESC;
+
+	emple_salario apellido_salario%ROWTYPE;
+	depart_sal departamento_salario%ROWTYPE;
+	total_sal total_salario%ROWTYPE;
+	salario_total NUMBER(10):=0;
+	num_emple INT := 0;
 BEGIN
-    OPEN apellido_salario;
-    	LOOP
-         	FETCH apellido_salario INTO deptEmple;
-    		EXIT WHEN apellido_salario%NOTFOUND;
-			DBMS_OUTPUT.PUT_LINE(deptEmple.DEPT_NO || ' ' ||deptEmple.APELLIDO ||' '|| deptEmple.SALARIO);
-    	END LOOP;
-    CLOSE apellido_salario;
+    DBMS_OUTPUT.PUT_LINE('*****Para cada empleado*****');
+    FOR emple_salario IN apellido_salario LOOP
+		DBMS_OUTPUT.PUT_LINE(emple_salario.APELLIDO ||' '|| emple_salario.SALARIO);
+    END LOOP;
+	DBMS_OUTPUT.PUT_LINE('*****Para cada departamento*****');
+	FOR depart_sal IN departamento_salario LOOP
+		DBMS_OUTPUT.PUT_LINE(depart_sal.DEPT_NO ||' '||depart_sal.sumaSalario);
+    END LOOP;
+	DBMS_OUTPUT.PUT_LINE('*****Total empleados - Total salario*****');
+	FOR total_sal IN total_salario LOOP
+        salario_total := total_sal.SALARIO + salario_total;
+		num_emple := num_emple +1;
+    END LOOP;
+	DBMS_OUTPUT.PUT_LINE('el numero de empleados total es: '||num_emple ||' con un salario total de: ' || salario_total);
 END;
 
 /*7) Escribir un programa PL-SQL que reciba un nombre de departamento como parámetro ('&parámetro') y muestre los datos de ese departamento.
@@ -262,24 +249,33 @@ END;
 /*9) Escribir un programa PL-SQL que incremente en un 10% el salario de los empleados 
 más antiguos en todos los departamentos. Definir un cursor con la cláusula 'FOR UPDATE'*/
 
+/*NO SE HACERLO CON FOR UPDATE -ESTE EJERCICIO ES IMPORTANTE-*/
 DECLARE
     CURSOR emple_mas_antiguo IS 
-    	SELECT e.APELLIDO, e.FECHA_ALT
-    	FROM EMPLE e
-    	GROUP BY e.DEPT_NO, e.FECHA_ALT
-		ORDER BY e.DEPT_NO, e.FECHA_ALT DESC;
-	
+    	SELECT d.DEPT_NO, e.APELLIDO, e.SALARIO, e.fecha_alt
+		FROM EMPLE e, DEPART d
+		WHERE e.DEPT_NO = d.DEPT_NO
+		ORDER BY dept_no, fecha_alt ASC;
 
-    
     emple_mas_viejo emple_mas_antiguo%ROWTYPE;
+	depart_actual DEPART.DEPT_NO%type;
+	depart_antiguo DEPART.DEPT_NO%type;
+	cont INT:= 0;
 BEGIN
-    OPEN emple_mas_antiguo;
-	LOOP
-        FETCH emple_mas_antiguo INTO emple_mas_viejo;
-		EXIT WHEN emple_mas_antiguo%NOTFOUND;
-		DBMS_OUTPUT.PUT_LINE(emple_mas_viejo.APELLIDO||' '||emple_mas_viejo.FECHA_ALT);
+    depart_antiguo := 0;
+    FOR emple_mas_viejo IN emple_mas_antiguo LOOP
+    	depart_actual := emple_mas_viejo.DEPT_NO;
+		IF cont>0 THEN
+            depart_antiguo := depart_actual;
+			cont:=0;
+        END IF;
+		IF (depart_antiguo!=depart_actual) THEN
+            cont := cont+1;
+            UPDATE EMPLE
+            SET SALARIO = SALARIO*1.1;
+			DBMS_OUTPUT.PUT_LINE(emple_mas_viejo.DEPT_NO || ' ' || emple_mas_viejo.APELLIDO || ' :'||emple_mas_viejo.SALARIO);
+		END IF;
     END LOOP;
-	CLOSE emple_mas_antiguo;
 END;
 
 
@@ -287,8 +283,23 @@ END;
 /*10) Escribir un programa PL-SQL parametrizado que reciba un nombre de departamento y un número positivo y que despida a ese número de empleados con menor antiguedad de ese departamento.
  Nota: debe emplearse un cursor parametrizado. Definir un cursor con parámetros que tenga la cláusula 'FOR UPDATE'*/
 
+DECLARE
+    CURSOR despidos(depart VARCHAR2, num INT) IS
+    	SELECT e.APELLIDO
+    	FROM DEPART d, EMPLE e 
+    	WHERE d.DEPT_NO = e.DEPT_NO AND d.DEPT_NO=depart
+    	ORDER BY e.FECHA_ALT;
+    dept_emple despidos%ROWTYPE;
+BEGIN
+    FOR dept_emple IN despidos(30, 2) LOOP
+    	DBMS_OUTPUT.PUT_LINE(dept_emple.APELLIDO);
+    END LOOP;
+END;
 
 
 
 
-/*TERMINAR EL 6*/
+/*HACER EL 9 CON FOR UPDATE TAMBIÉN*/
+
+
+
