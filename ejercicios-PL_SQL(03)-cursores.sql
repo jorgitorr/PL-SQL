@@ -137,21 +137,13 @@ TENER EN CUENTA QUE SOLO PUEDE HABER UN EMPLEADO EN UN OFICIO DESPUÉS DE HACERL
 */
  /*PONER EJEMPLOS CON PICARDÍA*/
 DECLARE
-    CURSOR empleado_menor_salario(oficio_emple VARCHAR2) IS
+    CURSOR empleado_menor_salario IS
     	SELECT e.OFICIO, e.APELLIDO, e.SALARIO
     	FROM EMPLE e
-    	WHERE e.OFICIO = oficio_emple
-    	ORDER BY e.SALARIO DESC;/*ordenar por oficio antes de salario (MIRAR ESTO DESC/ASC)*/
+    	ORDER BY e.OFICIO, e.SALARIO ASC;
 	empleado empleado_menor_salario%ROWTYPE;
 BEGIN
-    OPEN empleado_menor_salario('VENDEDOR');
-    	LOOP 
-    		FETCH empleado_menor_salario INTO empleado;
-            EXIT WHEN empleado_menor_salario%NOTFOUND;
-			DBMS_OUTPUT.PUT_LINE(empleado.OFICIO|| ' ' || empleado.APELLIDO||' '||empleado.SALARIO);
-    	END LOOP;
-    CLOSE empleado_menor_salario;
-	OPEN empleado_menor_salario('EMPLEADO');
+    OPEN empleado_menor_salario;
     	LOOP 
     		FETCH empleado_menor_salario INTO empleado;
             EXIT WHEN empleado_menor_salario%NOTFOUND;
