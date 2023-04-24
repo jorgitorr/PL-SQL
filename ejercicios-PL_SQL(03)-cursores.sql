@@ -126,13 +126,22 @@ END;
 
 /*5) Codificar un programa que visualice los dos empleados que ganan menos de cada oficio.
    Nota: En el SELECT asociado al cursor NO debe limitarse el número de filas con %ROWNUM */
-   
+ 
+ /*NO LE PUEDO PASAR EL OFICIO POR PARÁMETRO, ES DIFERENTE A LO QUE PIDE EL EJERCICIO, TENGO QUE GUARDAR EL OFICIO POR EL QUE IBA
+ TENEMOS DOS VARIABLES OFICIO_ANTERIO Y OFICIO_ACTUAL 
+ IF(OFICIO_ANTERIOR != OFICIO_ACTUAL)
+ 	IMPRIMO TODO
+	CONT:= 0;
+	
+TENER EN CUENTA QUE SOLO PUEDE HABER UN EMPLEADO EN UN OFICIO DESPUÉS DE HACERLO
+*/
+ /*PONER EJEMPLOS CON PICARDÍA*/
 DECLARE
     CURSOR empleado_menor_salario(oficio_emple VARCHAR2) IS
     	SELECT e.OFICIO, e.APELLIDO, e.SALARIO
     	FROM EMPLE e
     	WHERE e.OFICIO = oficio_emple
-    	ORDER BY e.SALARIO ASC;
+    	ORDER BY e.SALARIO DESC;/*ordenar por oficio antes de salario (MIRAR ESTO DESC/ASC)*/
 	empleado empleado_menor_salario%ROWTYPE;
 BEGIN
     OPEN empleado_menor_salario('VENDEDOR');
@@ -152,7 +161,7 @@ BEGIN
 END;
 
 
-/*NO ME DEJA USAR GROUP BY CON LA DE ARRIBA*/
+/*NO ME DEJA USAR GROUP BY CON LA DE ARRIBA -> no se puede hacer group by si no vas a usar una funcion de grupo*/
 
 /*6) Escribir un programa que muestre, en formato similar a las rupturas de control o secuencia vistas en SQL*plus los siguientes datos:
 
