@@ -141,16 +141,18 @@ DECLARE
     	SELECT e.OFICIO, e.APELLIDO, e.SALARIO
     	FROM EMPLE e
     	ORDER BY e.OFICIO, e.SALARIO ASC;
-	empleado empleado_menor_salario%ROWTYPE;
+	cont NUMBER := 1;
+	oficio_anterior	EMPLE.OFICIO%type;
+	oficio_actual EMPLE.OFICIO%type;
+	
 BEGIN
-    OPEN empleado_menor_salario;
-    	LOOP 
-    		FETCH empleado_menor_salario INTO empleado;
-            EXIT WHEN empleado_menor_salario%NOTFOUND;
-			DBMS_OUTPUT.PUT_LINE(empleado.OFICIO|| ' ' || empleado.APELLIDO||' '||empleado.SALARIO);
-    	END LOOP;
-    CLOSE empleado_menor_salario;
+    FOR empleado IN empleado_menor_salario LOOP
+		cont := cont+1;
+		
+		DBMS_OUTPUT.PUT_LINE(empleado.OFICIO|| ' ' || empleado.APELLIDO||' '||empleado.SALARIO);
+    END LOOP;
 END;
+
 
 
 /*NO ME DEJA USAR GROUP BY CON LA DE ARRIBA -> no se puede hacer group by si no vas a usar una funcion de grupo*/
