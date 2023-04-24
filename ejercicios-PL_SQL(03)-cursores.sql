@@ -148,7 +148,11 @@ DECLARE
 BEGIN
     FOR empleado IN empleado_menor_salario LOOP
 		cont := cont+1;
-		
+		oficio_anterior := empleado.OFICIO;
+		IF cont > 1 AND oficio_anterior != oficio_actual THEN
+            cont := 0;
+			oficio_actual := empleado.OFICIO;
+		END IF;
 		DBMS_OUTPUT.PUT_LINE(empleado.OFICIO|| ' ' || empleado.APELLIDO||' '||empleado.SALARIO);
     END LOOP;
 END;
