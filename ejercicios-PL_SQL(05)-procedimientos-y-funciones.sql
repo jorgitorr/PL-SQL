@@ -34,12 +34,39 @@ END;
 
 
 /*2) Escribir un procedimiento que reciba dos números y visualice su suma.*/
-CREATE PROCEDURE suma_num(num1 NUMBER, num2 NUMBER)IS
+CREATE OR REPLACE PROCEDURE suma_num(num OUT NUMBER, num1 NUMBER, num2 NUMBER)
+IS                                  /*OUT para almacenar un valor*/
 BEGIN
-    
+	num := num1+num2; 
+END;
+
+/*prueba del procedimiento*/
+DECLARE 
+    num NUMBER:= 0;
+	
+BEGIN
+  suma_num(num,5,5);
+	DBMS_OUTPUT.PUT_LINE(num);
 END;
 
 /*3) Codificar un procedimiento que reciba una cadena y la visualice al revés.*/
+
+CREATE OR REPLACE PROCEDURE reverse_cadena(cadena VARCHAR2) IS
+    salida VARCHAR2(20);
+BEGIN
+    FOR I IN REVERSE 1..LENGTH(cadena) LOOP
+    	salida := salida || SUBSTR(cadena,i,1);/*el 1 representa la cantidad de caracteres que se coge*/
+    END LOOP;
+	DBMS_OUTPUT.PUT_LINE(salida);
+END;
+
+
+
+DECLARE 
+BEGIN
+    reverse_cadena('felipe');
+END;
+
 
 
 /*4) Escribir una función que reciba una fecha y devuelva el año, en número, correspondiente a esa fecha.*/
