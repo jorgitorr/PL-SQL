@@ -285,21 +285,39 @@ END;
 
 DECLARE
     CURSOR despidos(depart VARCHAR2, num INT) IS
-    	SELECT e.APELLIDO
+    	SELECT e.APELLIDO, e.FECHA_ALT
     	FROM DEPART d, EMPLE e 
-    	WHERE d.DEPT_NO = e.DEPT_NO AND d.DEPT_NO=depart
-    	ORDER BY e.FECHA_ALT;
+    	WHERE d.DEPT_NO = e.DEPT_NO AND d.DEPT_NO=depart AND ROWNUM<num+1 /*es como limit en oracle*/
+    	ORDER BY e.FECHA_ALT
+		FOR UPDATE OF e.APELLIDO, e.DEPT_NO, d.DEPT_NO NOWAIT;
     dept_emple despidos%ROWTYPE;
 BEGIN
     FOR dept_emple IN despidos(30, 2) LOOP
-    	DBMS_OUTPUT.PUT_LINE(dept_emple.APELLIDO);
+    	DBMS_OUTPUT.PUT_LINE(dept_emple.APELLIDO ||' '||dept_emple.FECHA_ALT);
     END LOOP;
 END;
 
 
+/*NO ME BORRA LAS FILAS*/
+DECLARE
+    CURSOR despidos(depart VARCHAR2, num INT) IS
+    	SELECT e.APELLIDO, e.FECHA_ALT
+    	FROM DEPART d, EMPLE e 
+    	WHERE d.DEPT_NO = e.DEPT_NO AND d.DEPT_NO=depart AND ROWNUM<num+1 /*es como limit en oracle*/
+    	ORDER BY e.FECHA_ALT
+		FOR UPDATE OF e.APELLIDO, e.DEPT_NO, d.DEPT_NO NOWAIT;
+    dept_emple despidos%ROWTYPE;
+BEGIN
+    FOR dept_emple IN despidos(30, 2) LOOP
+    	UPDATE EMPLE e
+    	SET e.APELLIDO = null, e.DEPT_NO=null
+    	WHERE CURRENT OF despidos;
+    	DBMS_OUTPUT.PUT_LINE(dept_emple.APELLIDO ||' '||dept_emple.FECHA_ALT);
+    END LOOP;
+END;
 
 
-/*HACER EL 9 CON FOR UPDATE TAMBIÉN*/
+/*HACER EL 9 CON FOR UPDATE TAMBIÉN, EL 10 NO ME BORRA NADA*/
 
 
 
