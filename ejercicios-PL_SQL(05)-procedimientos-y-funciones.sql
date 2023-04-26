@@ -244,35 +244,112 @@ END;
 
 /*11) Implementar un procedimiento que reciba un importe y visualice el desglose del cambio en unidades monetarias de 1, 5, 10, 25, 50, 100, 200, 500, 1000, 2000, 5000 Ptas. en orden inverso al que aparecen aquí enumeradas.*/
 
-CREATE OR REPLACE PROCEDURE importe_desglose(num1 NUMBER, num2 NUMBER, num3 NUMBER, num4 NUMBER, num5 NUMBER)IS
+CREATE OR REPLACE PROCEDURE importe_desglose(num NUMBER)IS/*no se puede usar directamente el num
+pasado por parámetros para poner una condicion de while -preguntarle en que casos a miguel angel-*/
+	importe NUMBER;
 BEGIN
-    DBMS_OUTPUT.PUT_LINE(num5 || num4 || num3 || num2 || num1 );
+    importe := num;
+    IF importe>0 THEN
+        WHILE importe>0 LOOP
+            IF(importe>5000)THEN
+                DBMS_OUTPUT.PUT_LINE(5000);
+                importe := importe - 5000;
+            ELSIF(importe>2000)THEN 
+                DBMS_OUTPUT.PUT_LINE(2000);
+                importe := importe - 2000;
+            ELSIF(importe>1000)THEN 
+                DBMS_OUTPUT.PUT_LINE(1000);
+                importe := importe - 1000;
+            ELSIF(importe>500)THEN 
+                DBMS_OUTPUT.PUT_LINE(500);
+                importe := importe - 500;
+            ELSIF(importe>200)THEN 
+                DBMS_OUTPUT.PUT_LINE(200);
+                importe := importe - 200;
+            ELSIF(importe>100)THEN 
+                DBMS_OUTPUT.PUT_LINE(100);
+                importe := importe - 100;
+            ELSIF(importe>50)THEN 
+                DBMS_OUTPUT.PUT_LINE(50);
+                importe := importe - 50;
+            ELSIF(importe>25)THEN 
+                DBMS_OUTPUT.PUT_LINE(25);
+                importe := importe - 25;
+            ELSIF(importe>10)THEN 
+                DBMS_OUTPUT.PUT_LINE(10);
+                importe := importe - 10;
+            ELSIF(importe>5)THEN
+                DBMS_OUTPUT.PUT_LINE(5);
+                importe := importe - 5;
+            ELSIF(importe>1)THEN 
+                DBMS_OUTPUT.PUT_LINE(1);
+                importe := importe - 1;
+            END IF;
+        END LOOP;
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('El numero introducido es menor de 0');
+    END IF;
 END;
 
 /*12) Codificar un procedimiento que permita borrar un empleado cuyo número se pasará en la llamada.
 Nota: El procedimiento anterior devolverá el mensaje 
 << Procedimiento PL/SQL terminado con éxito >> aunque no exista el número y, por tanto, no se borre el empleado. Para evitarlo se puede escribir:*/
-
+/* DATOS QUE DA EL ENUNCIADO
 SELECT ROWID INTO v_row FROM emple .....
-DELETE ... WHERE ROWID =  v_row;
+DELETE ... WHERE ROWID =  v_row;*/
+
+CREATE OR REPLACE PROCEDURE borrar_emple(num NUMBER)
+IS
+    v_row ROWID;
+BEGIN
+   SELECT ROWID INTO v_row FROM EMPLE e 
+    WHERE e.EMP_NO = num;
+	DELETE EMPLE WHERE ROWID =  v_row; 
+END;
+
+/*USO:*/
+DECLARE
+BEGIN
+    borrar_emple(7499);
+END;
 
 
 /*13)  Escribir un procedimiento que modifique la localidad de un departamento. El procedimiento recibirá como parámetros el número del departamento y la localidad nueva.
 
 Nota: Lo indicado en la nota del ejercicio anterior se puede aplicar también a este.*/
 
+CREATE OR REPLACE PROCEDURE modifica_loc(depart DEPART.DEPT_NO%TYPE, nueva_loc DEPART.LOC%TYPE)IS
+BEGIN
+    UPDATE DEPART d
+    SET d.LOC = nueva_loc
+    WHERE d.DEPT_NO = depart;
+END;
+
+
+/*USO:*/
+DECLARE
+BEGIN
+    modifica_loc(20,'JAÉN');
+END;
+
+
 /*14) Visualizar todos los procedimientos y funciones del usuario almacenados en la base de datos y su situación (valid o invalid).
 
 Nota: Se necesitará consultar de la tabla del sistema 'USER_OBJECTS' las columnas 'OBJECT_NAME', 'OBJECT_TYPE', 'STATUS', donde el tipo de objeto ('OBJECT_TYPE') puede ser 'PROCEDURE' o 'FUNCTION'
 	También se puede utilizar la vista ALL_OBJECTS. */
 
-
+SELECT OBJECT_NAME, OBJECT_TYPE, STATUS
+FROM USER_OBJECTS
+WHERE OBJECT_TYPE IN ('PROCEDURE','FUNCTION');
 
 
 
 
 /*PREGUNTARLE A MIGUEL ANGEL PORQUE EN EL EJERCICIO 10 HAY QUE 
-PONERLE UN TAMAÑO A LA VARIABLE*/
+PONERLE UN TAMAÑO A LA VARIABLE
+y el 10 -lo que viene-
+el 11 no me va
+*/
 
 
 
