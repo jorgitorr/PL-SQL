@@ -1,8 +1,8 @@
 /*FUNCIONES Y PROCEDIMIENTOS*/
 
 
-1)  Indicar los errores que aparecen en las siguientes instrucciones y la forma de corregirlos.
-
+/*1)  Indicar los errores que aparecen en las siguientes instrucciones y la forma de corregirlos.*/
+/*este es el que está mal:*/
 DECLARE
   Num1 NUMBER(8,2) := 0		/*LE FALTA ;*/				
   Num2 NUMBER(8,2) NOT NULL DEFAULT 0;    
