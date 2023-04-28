@@ -1,0 +1,53 @@
+FUNCIONES PREDEFINIDAS/INTEGRADAS O DEL SISTEMA
+
+    TO_CHAR(DATE,'YYYY-MM-DD')
+
+    TO_DATE('03/10/1997', 'DD/MM/YYYY') 
+
+    TO_TIMESTAMP('03/02/1998 14:30:00', 'DD/MM/YYYY HH24:MI:SS')
+
+    TO_NUMBER(cadena) -> convierte cadena en números
+
+    ASCII() -> convierte a ascii cualquier carácter
+
+    TRIM() -> elimina espacios en blanco
+
+    SUBSTR(cadena, 1, 4); -> substrae de cadena desde la pos 1, 4 letras
+
+    ADD_MONTHS(fecha_inicial, 3); -- suma 3 meses a la fecha inicial
+
+    MONTHS_BETWEEN(fecha_final, fecha_inicial); -- calcula el número de meses entre dos fechas
+
+    DATE: este tipo de datos almacena una fecha y hora en formato estándar de Oracle. Para declarar una variable de tipo DATE, puedes usar la siguiente sintaxis:
+
+    fecha DATE;
+    Para asignar un valor a una variable de tipo DATE, puedes utilizar la función TO_DATE(), como se muestra en el siguiente ejemplo:
+
+
+    fecha := TO_DATE('2023-04-26 15:30:00', 'YYYY-MM-DD HH24:MI:SS');
+
+    EXTRACT(YEAR FROM fecha1) -> si fecha es una date te selecciona el año
+
+    CAST(valor AS tipo_de_dato)
+    CAST('123' AS NUMBER) -> extrae los numeros de la cadena y los covierte a numeros
+
+    anio := TO_NUMBER(SUBSTR(TO_CHAR(fecha, 'YYYY-MM-DD'), 1, 4)); -> otra forma de extraer el año
+
+
+    Conversiones de datos: TO_CHAR(), TO_NUMBER(), TO_DATE(), TO_TIMESTAMP(), CAST()
+    Manejo de cadenas: CONCAT(), SUBSTR(), INSTR(), LENGTH(), TRIM(), REPLACE()
+    Funciones matemáticas: ABS(), CEIL(), FLOOR(), ROUND(), MOD(), POWER(), SQRT(), SIGN()
+    Funciones de fecha y hora: SYSDATE, CURRENT_DATE, EXTRACT(), ADD_MONTHS(), MONTHS_BETWEEN(), NEXT_DAY(), LAST_DAY(), TRUNC(), ROUND(), TO_CHAR()
+    Funciones de agregación: AVG(), COUNT(), MAX(), MIN(), SUM()
+    Funciones de control de flujo: IF-THEN-ELSE, CASE, DECODE()
+    Funciones de cursor: %FOUND, %NOTFOUND, %ROWCOUNT, %ISOPEN
+    Funciones de excepciones: RAISE(), EXCEPTION, SQLCODE, SQLERRM
+
+    CURSORES:
+        con cursores puedo guardar una consulta, el cursor con un nombre
+        y despues recorrer el cursor con una variable que va cogiendo
+        los valores del cursor 
+
+        FOR nombreVariable IN nombreCursor LOOP
+            instrucciones
+        END LOOP;
