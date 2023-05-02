@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 FUNCIONES PREDEFINIDAS/INTEGRADAS O DEL SISTEMA
 
     TO_CHAR(DATE,'YYYY-MM-DD')
@@ -48,4 +49,4 @@ FUNCIONES PREDEFINIDAS/INTEGRADAS O DEL SISTEMA
 
         FOR nombreVariable IN nombreCursor LOOP
             instrucciones
-        END LOOP;
+=======
