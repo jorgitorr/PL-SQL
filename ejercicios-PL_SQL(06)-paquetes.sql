@@ -49,20 +49,43 @@ BEGIN
 END;
 
 /*b NO ESTA TERMINADO*/
-CREATE OR REPLACE PROCEDURE borrar_depart(borrado DEPART.DEPT_NO%type, depart_pasar DEPART.DEPT_NO%type) 
+CREATE OR REPLACE PROCEDURE pasarDepartBorrar(departBorrar NUMBER, departPasar NUMBER)
 IS
 BEGIN
-    DECLARE
-    	CURSOR emple_depart IS
-        	SELECT * FROM EMPLE e WHERE e.DEPT_NO=borrado; 
-		depart emple_depart%ROWTYPE;
-    BEGIN
-        FOR depart IN emple_depart LOOP --recorro el cursor
-        	INSERT INTO EMPLE VALUES(depart.EMP_NO,depart.APELLIDO,depart.OFICIO, depart.DIR, depart.FECHA_ALT, depart.SALARIO,
-                depart.COMISION, depart_pasar);
-    	END LOOP;
-	END;
+	UPDATE EMPLE e
+	SET e.DEPT_NO = departPasar
+	WHERE e.DEPT_NO = departBorrar;/*no me funciona bien, me agrega todos los empleados
+                                    con el departPasar PREGUNTA MIGUEL ANGEL*/
+
+	DELETE FROM EMPLE e
+	WHERE e.DEPT_NO = departBorrar;
 END;
+
+
+/**/
+DECLARE
+BEGIN
+    borrar_depart(30,40);
+END;
+
+
+/*c*/
+CREATE OR REPLACE PROCEDURE modificar_loc(numDepart NUMBER, nuevaLoc DEPART.LOC%TYPE)IS
+BEGIN
+    UPDATE DEPART d
+    SET d.LOC = nuevaLoc
+    WHERE d.DEPT_NO = numDepart;
+END;
+
+/*uso*/
+DECLARE
+BEGIN
+    modificar_loc(30,'CÁDIZ');
+END;
+
+
+/*d*/
+
 
 
 
