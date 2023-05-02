@@ -26,8 +26,6 @@ FUNCIONES PREDEFINIDAS/INTEGRADAS O DEL SISTEMA
 
     fecha := TO_DATE('2023-04-26 15:30:00', 'YYYY-MM-DD HH24:MI:SS');
 
-    EXTRACT(YEAR FROM fecha1) -> si fecha es una date te selecciona el año
-
     CAST(valor AS tipo_de_dato)
     CAST('123' AS NUMBER) -> extrae los numeros de la cadena y los covierte a numeros
 
