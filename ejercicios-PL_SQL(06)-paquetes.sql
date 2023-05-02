@@ -49,13 +49,12 @@ BEGIN
 END;
 
 /*b NO ESTA TERMINADO*/
-CREATE OR REPLACE PROCEDURE pasarDepartBorrar(departBorrar NUMBER, departPasar NUMBER)
+CREATE OR REPLACE PROCEDURE borrar_depart(departBorrar NUMBER, departPasar NUMBER)
 IS
 BEGIN
 	UPDATE EMPLE e
 	SET e.DEPT_NO = departPasar
-	WHERE e.DEPT_NO = departBorrar;/*no me funciona bien, me agrega todos los empleados
-                                    con el departPasar PREGUNTA MIGUEL ANGEL*/
+	WHERE e.DEPT_NO = departBorrar;
 
 	DELETE FROM EMPLE e
 	WHERE e.DEPT_NO = departBorrar;
