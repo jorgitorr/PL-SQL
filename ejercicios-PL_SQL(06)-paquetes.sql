@@ -27,7 +27,6 @@ devuelve el número del mismo.
 */
 
 /*especificacion*/
-
 CREATE OR REPLACE PACKAGE gest_depart IS
     /*a*/
     PROCEDURE insertar_nuevo_depart(nombre DEPART.DNOMBRE%TYPE,loc DEPART.LOC%TYPE);
@@ -110,19 +109,22 @@ CREATE OR REPLACE PACKAGE BODY gest_depart IS
     END;
 
     /*e*/
-    PROCEDURE visualizar_datos(nombre_depart DEPART.DNOMBRE%TYPE)IS
-        nombre DEPART.DNOMBRE%TYPE;
+    PROCEDURE visualizar_datos(nombre_depart DEPART.DNOMBRE%TYPE)IS--CAMBIAR
+        nombre DEPART.DEPT_NO%TYPE;
     BEGIN
         nombre := buscar_depart_por_nombre(nombre_depart);
+        DBMS_OUTPUT.PUT_LINE(nombre);
     END;
 
     /*f*/
-    FUNCTION buscar_depart_por_nombre(nombre_depart DEPART.DNOMBRE%TYPE)
+    FUNCTION buscar_depart_por_nombre(nombre_depart DEPART.DNOMBRE%TYPE)--CAMBIAR
     RETURN NUMBER IS 
         num_depart DEPART.DEPT_NO%TYPE;
     BEGIN
         SELECT d.DEPT_NO INTO num_depart
-        FROM DEPART d;
+        FROM DEPART d
+        WHERE d.DNOMBRE = nombre_depart;
+        RETURN num_depart;
     END;
 END;
 
