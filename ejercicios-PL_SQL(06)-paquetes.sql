@@ -4,88 +4,127 @@
 /*1) Escribir un paquete completo para gestionar los departamentos. El paquete se llamará gest_depart y deberá incluir, al menos, 
 los siguientes subprogramas:
 
--insertar_nuevo_depart: permite insertar un departamento nuevo. El procedimiento 
+-a) insertar_nuevo_depart: permite insertar un departamento nuevo. El procedimiento 
 recibe el nombre y la localidad del nuevo departamento. 
 Creará el nuevo departamento comprobando que el nombre no se duplique y le asignará 
 como número de departamento la decena siguiente al último número de departamento utilizado.
 
--borrar_depart: permite borrar un departamento. El procedimiento recibirá dos números de departamento de los cuales el primero corresponde 
+-b) borrar_depart: permite borrar un departamento. El procedimiento recibirá dos números de departamento de los cuales el primero corresponde 
 al departamento que queremos borrar y el segundo al departamento al que pasarán los empleados del departamento que se va eliminar. 
 El procedimiento se encargará de realizar los cambios oportunos en los números de departamento de los empleados correspondientes. 
 
--modificar_loc_depart: modifica la localidad del departamento. El procedimiento recibirá el número del departamento a modificar y la 
+-c) modificar_loc_depart: modifica la localidad del departamento. El procedimiento recibirá el número del departamento a modificar y la 
 nueva localidad, y realizará el cambio solicitado.
 
--visualizar_datos_depart: visualizará los datos de un departamento cuyo número se pasará en la llamada. Además de los datos relativos 
+-d) visualizar_datos_depart: visualizará los datos de un departamento cuyo número se pasará en la llamada. Además de los datos relativos 
 al departamento, se visualizará el número de empleados que pertenecen actualmente al departamento. 
 
--visualizar_datos_depart: versión sobrecargada del procedimiento anterior que, en lugar del número del departamento, recibirá el nombre 
+-e) visualizar_datos_depart: versión sobrecargada del procedimiento anterior que, en lugar del número del departamento, recibirá el nombre 
 del departamento. Realizará una llamada a la función buscar_depart_por_nombre que se indica en el apartado siguiente.
 
--buscar_depart_por_nombre: función local al paquete. Recibe el nombre de un departamento y devuelve el número del mismo.
+-f) buscar_depart_por_nombre: función local al paquete. Recibe el nombre de un departamento y 
+devuelve el número del mismo.
 */
 
-/*a*/
+/*especificacion*/
 
-CREATE OR REPLACE PROCEDURE insertar_nuevo_depart(nombre DEPART.DNOMBRE%TYPE,loc DEPART.LOC%TYPE) 
-IS
-    last_depart DEPART.DEPT_NO%TYPE;
-BEGIN
-    SELECT MAX(DEPT_NO) INTO last_depart FROM DEPART;
-    IF last_depart IS NULL THEN
-        last_depart := 10; -- Si no hay departamentos en la tabla, se empieza en 10
-    ELSE
-        last_depart := last_depart + 10; -- Se agrega 10 para asignar el número del nuevo departamento
-    END IF;
+CREATE OR REPLACE PACKAGE gest_depart IS
+    /*a*/
+    PROCEDURE insertar_nuevo_depart(nombre DEPART.DNOMBRE%TYPE,loc DEPART.LOC%TYPE);
+    
+    /*b NO ESTA TERMINADO*/
+    PROCEDURE borrar_depart_depart(departBorrar NUMBER, departPasar NUMBER);
+    
+    /*c*/
+    PROCEDURE modificar_loc(numDepart NUMBER, nuevaLoc DEPART.LOC%TYPE);
+    
+    /*d*/
+    PROCEDURE visualizar_datos_depart( dept_num DEPART.DEPT_NO%TYPE, depart OUT DEPART%ROWTYPE, num_emple OUT NUMBER);
+    
+    /*e*/
+    PROCEDURE visualizar_datos(nombre_depart DEPART.DNOMBRE%TYPE);
+    
+    /*f*/
+    FUNCTION buscar_depart_por_nombre(nombre_depart DEPART.DNOMBRE%TYPE) RETURN NUMBER;
+    
+END;
 
-    DECLARE
-        num_deps NUMBER;
+
+/*cuerpo*/
+CREATE OR REPLACE PACKAGE BODY gest_depart IS
+    /*a*/
+    PROCEDURE insertar_nuevo_depart(nombre DEPART.DNOMBRE%TYPE,loc DEPART.LOC%TYPE) 
+    IS
+        last_depart DEPART.DEPT_NO%TYPE;
     BEGIN
-        SELECT COUNT(*) INTO num_deps FROM DEPART WHERE DNOMBRE = nombre;
-        IF num_deps = 0 THEN
-            INSERT INTO DEPART (DEPT_NO, DNOMBRE, LOC) VALUES (last_depart, nombre, loc);
+        SELECT MAX(DEPT_NO) INTO last_depart FROM DEPART;
+        IF last_depart IS NULL THEN
+            last_depart := 10; -- Si no hay departamentos en la tabla, se empieza en 10
+        ELSE
+            last_depart := last_depart + 10; -- Se agrega 10 para asignar el número del nuevo departamento
         END IF;
+
+        DECLARE
+            num_deps NUMBER;
+        BEGIN
+            SELECT COUNT(*) INTO num_deps FROM DEPART WHERE DNOMBRE = nombre;
+            IF num_deps = 0 THEN
+                INSERT INTO DEPART (DEPT_NO, DNOMBRE, LOC) VALUES (last_depart, nombre, loc);
+            END IF;
+        END;
+    END;
+
+    /*b*/
+    PROCEDURE borrar_depart_depart(departBorrar NUMBER, departPasar NUMBER)
+    IS
+    BEGIN
+        UPDATE EMPLE e
+        SET e.DEPT_NO = departPasar
+        WHERE e.DEPT_NO = departBorrar;
+
+        DELETE FROM EMPLE e
+        WHERE e.DEPT_NO = departBorrar;
+    END;
+
+
+    /*c*/
+    PROCEDURE modificar_loc(numDepart NUMBER, nuevaLoc DEPART.LOC%TYPE)IS
+    BEGIN
+        UPDATE DEPART d
+        SET d.LOC = nuevaLoc
+        WHERE d.DEPT_NO = numDepart;
+    END;
+
+
+    /*d*/
+    PROCEDURE visualizar_datos_depart( dept_num DEPART.DEPT_NO%TYPE, depart OUT DEPART%ROWTYPE, num_emple OUT NUMBER)IS
+    BEGIN
+        SELECT d.DEPT_NO, d.DNOMBRE, d.LOC INTO depart
+        FROM DEPART d
+        WHERE d.DEPT_NO = dept_num;
+
+        SELECT COUNT(e.APELLIDO) INTO num_emple
+        FROM EMPLE e, DEPART d 
+        WHERE e.DEPT_NO = d.DEPT_NO AND e.DEPT_NO = 20
+        GROUP BY d.DEPT_NO;
+    END;
+
+    /*e*/
+    PROCEDURE visualizar_datos(nombre_depart DEPART.DNOMBRE%TYPE)IS
+        nombre DEPART.DNOMBRE%TYPE;
+    BEGIN
+        nombre := buscar_depart_por_nombre(nombre_depart);
+    END;
+
+    /*f*/
+    FUNCTION buscar_depart_por_nombre(nombre_depart DEPART.DNOMBRE%TYPE)
+    RETURN NUMBER IS 
+        num_depart DEPART.DEPT_NO%TYPE;
+    BEGIN
+        SELECT d.DEPT_NO INTO num_depart
+        FROM DEPART d;
     END;
 END;
-
-/*b NO ESTA TERMINADO*/
-CREATE OR REPLACE PROCEDURE borrar_depart(departBorrar NUMBER, departPasar NUMBER)
-IS
-BEGIN
-	UPDATE EMPLE e
-	SET e.DEPT_NO = departPasar
-	WHERE e.DEPT_NO = departBorrar;
-
-	DELETE FROM EMPLE e
-	WHERE e.DEPT_NO = departBorrar;
-END;
-
-
-/**/
-DECLARE
-BEGIN
-    borrar_depart(30,40);
-END;
-
-
-/*c*/
-CREATE OR REPLACE PROCEDURE modificar_loc(numDepart NUMBER, nuevaLoc DEPART.LOC%TYPE)IS
-BEGIN
-    UPDATE DEPART d
-    SET d.LOC = nuevaLoc
-    WHERE d.DEPT_NO = numDepart;
-END;
-
-/*uso*/
-DECLARE
-BEGIN
-    modificar_loc(30,'CÁDIZ');
-END;
-
-
-/*d*/
-
-
 
 
 /*2) Escribir un paquete completo para gestionar los empleados. El paquete se llamará gest_emple e incluirá, al menos los siguientes subprogramas:
