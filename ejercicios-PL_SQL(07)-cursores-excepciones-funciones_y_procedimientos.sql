@@ -74,7 +74,10 @@ end;
 
 
 
-/*4) Escribir un procedimiento que suba el sueldo de todos los empleados que ganen igual o menos que el salario medio de su oficio. La subida será de el 50% de la diferencia entre el salario del empleado y la media de su oficio. Se deberá asegurar que la transacción no se quede a medias, y se gestionarán los posibles errores. */
+/*4) Escribir un procedimiento que suba el sueldo de todos los empleados que ganen igual 
+o menos que el salario medio de su oficio. La subida será de el 50% de la diferencia entre 
+el salario del empleado y la media de su oficio. Se deberá asegurar que la transacción no 
+se quede a medias, y se gestionarán los posibles errores. */
 
 
 /*5) Diseñar una aplicación que simule un listado de liquidación de los empleados según las siguientes especificaciones:
