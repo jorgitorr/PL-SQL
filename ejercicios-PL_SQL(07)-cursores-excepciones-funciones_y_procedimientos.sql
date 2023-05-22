@@ -79,6 +79,22 @@ o menos que el salario medio de su oficio. La subida será de el 50% de la difer
 el salario del empleado y la media de su oficio. Se deberá asegurar que la transacción no 
 se quede a medias, y se gestionarán los posibles errores. */
 
+CREATE OR REPLACE PROCEDURE suba_sueldo IS
+   CURSOR media_oficio IS
+      SELECT e.oficio, AVG(e.SALARIO) salario
+      FROM EMPLE e 
+      GROUP BY e.OFICIO;
+   salario_media_oficio media_oficio%rowtype;
+BEGIN
+   FOR salario_media_empleado IN media_oficio LOOP
+      UPDATE EMPLE e 
+      SET e.salario = e.salario + (e.salario*0.5)
+      WHERE e.oficio = salario_media_oficio.oficio;
+   END LOOP;
+EXCEPTION
+   WHEN NO_DATA_FOUND THEN
+      DBMS_OUTPUT.PUT_LINE('No hay filas');
+END;
 
 /*5) Diseñar una aplicación que simule un listado de liquidación de los empleados según las siguientes especificaciones:
 
