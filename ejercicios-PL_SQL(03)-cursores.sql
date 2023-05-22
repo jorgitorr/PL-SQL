@@ -68,7 +68,8 @@ BEGIN
 	CLOSE apellido_cadena;
 END;
 
-/*4) Escribir un programa que visualice el apellido y el salario de los cinco empleados que tienen el salario más alto.
+/*4) Escribir un programa que visualice el apellido y el salario de los cinco empleados que tienen el 
+salario más alto.
    Nota: En el SELECT asociado al cursor NO debe limitarse el número de filas con %ROWNUM
    CORREGIDO*/
    
@@ -126,7 +127,8 @@ END;
 
 /*no se puede hacer GROUP BY (SE SUPONE) si no vas a usar una funcion de grupo*/
 
-/*6) Escribir un programa que muestre, en formato similar a las rupturas de control o secuencia vistas en SQL*plus los siguientes datos:
+/*6) Escribir un programa que muestre, en formato similar a las rupturas de control o secuencia 
+vistas en SQL*plus los siguientes datos:
 
 - Para cada empleado: apellido y salario.
 - Para cada departamento: Número de empleados y suma de los salarios del departamento.
