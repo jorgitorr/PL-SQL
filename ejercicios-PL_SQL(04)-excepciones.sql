@@ -300,6 +300,32 @@ BEGIN
 END; 
 
 
+CREATE OR REPLACE PROCEDURE insertar_departamento(
+    dorsal CICLISTA.DORSAL%TYPE,
+    nombre CICLISTA.NOMBRE%TYPE,
+    edad CICLISTA.EDAD%TYPE,
+    nomeq CICLISTA.NOMEQ%TYPE
+) IS
+    NOMBRE_EXCEPCION EXCEPTION;
+	dorsal1 CICLISTA.DORSAL%TYPE := dorsal;
+    CURSOR dorsal_ciclista IS
+        SELECT c.dorsal
+        FROM ciclista c 
+        WHERE c.dorsal = dorsal1;
+    dorsal_cursor dorsal_ciclista%ROWTYPE;
+BEGIN
+    FOR dorsal_cursor IN dorsal_ciclista LOOP
+        IF dorsal_cursor.dorsal = 20 THEN
+            RAISE NOMBRE_EXCEPCION;
+        END IF;
+    END LOOP;
+EXCEPTION
+    WHEN NOMBRE_EXCEPCION THEN
+        DBMS_OUTPUT.PUT_LINE('El dorsal ya existe: ' || dorsal1);
+END;
+
+
+
 
 
 

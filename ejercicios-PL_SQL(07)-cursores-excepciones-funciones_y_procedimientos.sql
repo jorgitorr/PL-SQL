@@ -80,21 +80,32 @@ el salario del empleado y la media de su oficio. Se deberá asegurar que la tran
 se quede a medias, y se gestionarán los posibles errores. */
 
 CREATE OR REPLACE PROCEDURE suba_sueldo IS
-   CURSOR media_oficio IS
-      SELECT e.oficio, AVG(e.SALARIO) salario
-      FROM EMPLE e 
-      GROUP BY e.OFICIO;
-   salario_media_oficio media_oficio%rowtype;
+   CURSOR emple_mayor_media IS
+      select apellido, oficio, salario from emple e2
+		WHERE salario<=(select avg(e.salario)
+		from emple e
+		WHERE e.oficio = e2.oficio
+		group by e.oficio);
+   emple_salario emple_mayor_media%rowtype;
 BEGIN
-   FOR salario_media_empleado IN media_oficio LOOP
-      UPDATE EMPLE e 
-      SET e.salario = e.salario + (e.salario*0.5)
-      WHERE e.oficio = salario_media_oficio.oficio;
+   FOR emple_salario IN emple_mayor_media LOOP
+      	UPDATE EMPLE e 
+      	SET e.salario = e.salario + (e.salario - emple_salario.salario*0.5)
+    	WHERE e.apellido = emple_salario.apellido;
    END LOOP;
 EXCEPTION
    WHEN NO_DATA_FOUND THEN
       DBMS_OUTPUT.PUT_LINE('No hay filas');
+	WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error');
 END;
+
+/*empleados con salario menor a la media de salarios por oficio*/
+select apellido, oficio, salario from emple e2
+WHERE salario<=(select avg(e.salario)
+from emple e
+WHERE e.oficio = e2.oficio
+group by e.oficio);
 
 /*5) Diseñar una aplicación que simule un listado de liquidación de los empleados según las siguientes especificaciones:
 
@@ -117,6 +128,16 @@ Total		           :.............(8)
 8 Suma de todos los conceptos anteriores.
 
 El listado irá ordenado por Apellido. */
+
+CREATE OR REPLACE PROCEDURE listado IS 
+   
+   SELECT e.salario
+   FROM EMPLE e 
+
+BEGIN
+   DBMS_OUTPUT.PUT_LINE('Liquidación del empleado: '|| );
+
+END;
 
 
 /*6) Crear la tabla T_liquidacion con las columnas apellido, departamento, oficio, 

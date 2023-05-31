@@ -1,8 +1,9 @@
 --EJEMPLOS DE DISPARADORES Ó TRIGGERS
 
 
-/*1.- Construir un disparador de base de datos que permita auditar las operaciones de inserción o borrado de datos que 
-se realicen en la tabla emple según las siguientes especificaciones:
+/*1.- Construir un disparador de base de datos que permita auditar las operaciones de 
+inserción o borrado de datos que se realicen en la tabla emple según las siguientes 
+especificaciones:
 -	En primer lugar se creará desde SQL*Plus la tabla auditaremple con la columna col1 VARCHAR2(200).
 -	Cuando se produzca cualquier manipulación se insertará una fila en dicha tabla que contendrá: 
 -	Fecha y hora
@@ -41,7 +42,8 @@ ON EMPLE
 FOR EACH ROW
 BEGIN
     UPDATE AUDITAREMPLE
-    SET col = TO_CHAR(:NEW.FECHA_ALT,'DD-MON-YYYY')||' '||TO_CHAR(:NEW.EMP_NO)||' '||:NEW.APELLIDO;
+    SET col = TO_CHAR(:NEW.FECHA_ALT,'DD-MON-YYYY')||' '||TO_CHAR(:NEW.EMP_NO)||' '||:NEW.APELLIDO
+	WHERE ...
 END;
 
 /*USO*/
