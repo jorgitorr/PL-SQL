@@ -96,7 +96,14 @@ CREATE OR REPLACE PROCEDURE etapa_ciclista_num_colores(numMaillot OUT NUMBER, co
    v_color MAILLOT.COLOR%TYPE;
 BEGIN
    FOR etc IN etapas_ciclistas LOOP
-      DBMS_OUTPUT.PUT_LINE(etc.etapa);
+      IF etapa_antigua NOT := etc.etapa THEN
+      	DBMS_OUTPUT.PUT_LINE(etc.etapa);
+	etapa_antigua := etc.etapa;
+	nombre_antiguo := etc.nombre;
+	num_maillots := 0;
+	v_color := '';
+      END IF;
+      
       IF nombre_antiguo = etc.nombre THEN
          num_maillots := num_maillots +1;
          v_color := v_color ||', '|| etc.color;
