@@ -87,7 +87,7 @@ CREATE OR REPLACE PROCEDURE etapa_ciclista_num_colores(numMaillot OUT NUMBER, co
       WHERE e.netapa = l.dorsal
       AND l.dorsal = c.dorsal
       AND l.codigo = m.codigo
-      GROUP BY e.netapa, c.nombre
+      /*como no hago cuenta de grupo no se agrupa*/
       ORDER BY e.netapa, c.nombre;
    etc etapas_ciclistas%rowtype;
    nombre_antiguo CICLISTA.NOMBRE%type;
