@@ -91,6 +91,7 @@ CREATE OR REPLACE PROCEDURE etapa_ciclista_num_colores(numMaillot OUT NUMBER, co
       ORDER BY e.netapa, c.nombre;
    etc etapas_ciclistas%rowtype;
    nombre_antiguo CICLISTA.NOMBRE%type;
+   etapa_antigua ETAPA.NETAPA%TYPE;
    num_maillots NUMBER := 0;
    v_color MAILLOT.COLOR%TYPE;
 BEGIN
