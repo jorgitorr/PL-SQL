@@ -16,16 +16,15 @@ El módulo debe devolver un booleano indicando si fue posible o no anotar ese ma
 además debe devolver la cuenta del nümero de mailliots que lleva hasta ese momento ese 
 ciclista en esa etapa. (4 puntos)*/
 
-CREATE OR REPLACE FUNCTION asignarMaillot(codigo MAILLOT.COLOR%TYPE, dorsal CICLISTA.DORSAL%TYPE,
+CREATE OR REPLACE FUNCTION asignarMaillot(v_codigo MAILLOT.CODIGO%TYPE, dorsal CICLISTA.DORSAL%TYPE,
 v_etapa ETAPA.NETAPA%TYPE, numMaillots OUT NUMBER)RETURN BOOLEAN IS
    corredor_ganador LLEVAR.DORSAL%type;/*esto es un type*/
-   maillot_morado MAILLOT.CODIGO%TYPE := 0;
-   maillot_azul MAILLOT.CODIGO%TYPE := 0;
+   maillot_escogido MAILLOT.CODIGO%TYPE;
 
    CURSOR ganadores IS
       SELECT dorsal
-      FROM llevar l
-      WHERE l.netapa = v_etapa;
+      FROM etapa e
+      WHERE e.netapa = v_etapa;
 
    CURSOR ganadores_pendiente IS
       SELECT l.dorsal
@@ -34,14 +33,11 @@ v_etapa ETAPA.NETAPA%TYPE, numMaillots OUT NUMBER)RETURN BOOLEAN IS
       AND p.pendiente > 8
       GROUP BY l.dorsal;
 BEGIN
-   SELECT codigo INTO maillot_morado 
+   SELECT color INTO maillot_escogido
    FROM maillot 
-   WHERE color = 'morado';
+   WHERE codigo = v_codigo;
 
-   SELECT codigo INTO maillot_azul
-   FROM maillot 
-   WHERE color = 'azul';
-      IF(codigo = maillot_morado)THEN
+      IF maillot_escogido = 'morado'THEN
          FOR corredor_ganador IN ganadores LOOP
             IF(corredor_ganador.dorsal = dorsal)THEN
                INSERT INTO llevar VALUES(dorsal,v_etapa, codigo);
