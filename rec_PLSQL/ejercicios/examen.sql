@@ -1,8 +1,16 @@
 /*1. Garantice mediante triggers que se anotará correctamente en la BD a quien se le ha asignado
-el maillot morado en esa etapa, que siempre corresponde al ganador de la elapa
+el maillot morado en esa etapa, que siempre corresponde al ganador de la etapa
 (2 puntos)*/
 
-
+CREATE OR REPLACE TRIGGER MaillotMorado
+AFTER INSERT OR UPDATE OF dorsal 
+ON etapa 
+FOR EACH ROW 
+BEGIN
+   INSERT INTO llevar VALUES(:NEW.dorsal, :NEW.netapa, (SELECT m.codigo
+                                                      FROM maillot m 
+                                                      WHERE m.color = 'morado'));
+END;
 
 /*2. Crear un módulo "asignarMaillot" que, dado un código de Maillot, un dorsal de ciclista 
 y un número de etapa, asigne ese maillot a ese ciclista en dicha etapa. Tenga en cuenta que 
@@ -16,56 +24,59 @@ El módulo debe devolver un booleano indicando si fue posible o no anotar ese ma
 además debe devolver la cuenta del nümero de mailliots que lleva hasta ese momento ese 
 ciclista en esa etapa. (4 puntos)*/
 
-CREATE OR REPLACE FUNCTION asignarMaillot(v_codigo MAILLOT.CODIGO%TYPE, dorsal CICLISTA.DORSAL%TYPE,
-v_etapa ETAPA.NETAPA%TYPE, numMaillots OUT NUMBER)RETURN BOOLEAN IS
-   corredor_ganador LLEVAR.DORSAL%type;/*esto es un type*/
-   maillot_escogido MAILLOT.CODIGO%TYPE;
 
-   CURSOR ganadores IS
-      SELECT dorsal
-      FROM etapa e
-      WHERE e.netapa = v_etapa;
-
-   CURSOR ganadores_pendiente IS
-      SELECT l.dorsal
-      FROM llevar l, etapa e, puerto p 
-      WHERE l.netapa = e.netapa AND p.netapa = e.netapa 
-      AND p.pendiente > 8
-      GROUP BY l.dorsal;
+CREATE OR REPLACE FUNCTION asignarMaillot(codigo_maillot MAILLOT.CODIGO%TYPE, v_dorsal CICLISTA.DORSAL%TYPE,
+v_netapa ETAPA.NETAPA%TYPE)RETURN BOOLEAN IS
+   v_color MAILLOT.COLOR%TYPE;
+   v_ganador_etapa CICLISTA.DORSAL%TYPE;
+   v_posible BOOLEAN;
 BEGIN
-   SELECT color INTO maillot_escogido
-   FROM maillot 
-   WHERE codigo = v_codigo;
+   SELECT color INTO v_color
+   FROM maillot
+	WHERE codigo = codigo_maillot;
 
-      IF maillot_escogido = 'morado'THEN
-         FOR corredor_ganador IN ganadores LOOP
-            IF(corredor_ganador.dorsal = dorsal)THEN
-               INSERT INTO llevar VALUES(dorsal,v_etapa, codigo);
-				   RETURN TRUE;
-            END IF;
-         END LOOP;
+   IF v_color = 'morado' THEN
+      SELECT dorsal INTO v_ganador_etapa
+      FROM etapa e 
+      WHERE e.netapa = v_netapa;
 
-      ELSIF(codigo = maillot_azul)THEN
-         FOR corredor_ganador IN ganadores_pendiente LOOP
-            IF(corredor_ganador.dorsal = dorsal) THEN
-               INSERT INTO llevar VALUES(dorsal, v_etapa, codigo);
-				   RETURN TRUE;
-            END IF;
-         END LOOP;
-         
+      IF v_ganador_etapa = v_dorsal THEN
+         v_posible := TRUE;
       ELSE
-         INSERT INTO llevar VALUES(dorsal, v_etapa, codigo);
-		RETURN TRUE;
-	END IF;
+         v_posible := FALSE;
+      END IF;
+   ELSIF v_color = 'azul' THEN
+      SELECT e.dorsal INTO v_ganador_etapa
+      FROM etapa e, puerto p 
+      WHERE e.netapa = p.netapa AND p.pendiente > 8
+      GROUP BY e.dorsal
+      ORDER BY COUNT(e.dorsal)
+      FETCH FIRST 1 ROW ONLY;
 
-   SELECT COUNT(l.codigo) INTO numMaillots
-   FROM llevar l 
-   WHERE l.dorsal = dorsal;
+      IF v_ganador_etapa = v_dorsal THEN
+         v_posible := TRUE;
+      ELSE 
+         v_posible := FALSE;
+      END IF;
+   ELSE 
+      v_posible := TRUE;
+   END IF;
 
-   DBMS_OUTPUT.PUT_LINE(numMaillots);
-
-	RETURN FALSE;
+   IF v_posible = TRUE THEN
+      INSERT INTO llevar VALUES(v_dorsal, v_netapa, codigo_maillot);
+   END IF;
+   RETURN v_posible;
 END;
+
+
+--prueba
+DECLARE
+    devuelve BOOLEAN;
+BEGIN
+    devuelve := asignarMaillot('MOR',2,2);
+	DBMS_OUTPUT.PUT_LINE(CASE devuelve WHEN TRUE THEN 'TRUE' ELSE 'FALSE' END);
+END;
+
 
 
 /*3. Redactar en PUSQL el módulo que se describe a continuación, en el que se deberá utilizar 
@@ -80,47 +91,42 @@ mailiots que ha ganado en esa etapa y el color de todos los mailiots asgnados en
 (en ese order cicista, cuenta y colores)
 (4 puntos)*/
 
-CREATE OR REPLACE PROCEDURE etapa_ciclista_num_colores(numMaillot OUT NUMBER, colorMaillot OUT MAILLOT.COLOR%TYPE)IS 
-   CURSOR etapas_ciclistas IS
-      SELECT e.netapa etapa, c.nombre nombre, m.color color
-      FROM ciclista c, llevar l, maillot m, etapa e
-      WHERE e.netapa = l.dorsal
-      AND l.dorsal = c.dorsal
-      AND l.codigo = m.codigo
-      /*como no hago cuenta de grupo no se agrupa*/
-      ORDER BY e.netapa, c.nombre;
-   etc etapas_ciclistas%rowtype;
-   nombre_antiguo CICLISTA.NOMBRE%type;
-   etapa_antigua ETAPA.NETAPA%TYPE;
-   num_maillots NUMBER := 0;
-   v_color MAILLOT.COLOR%TYPE;
+
+CREATE OR REPLACE PROCEDURE etapaCiclistas IS
+   v_colores MAILLOT.COLOR%TYPE;
+   v_ciclista_anterior CICLISTA.NOMBRE%TYPE;
+   v_num_maillots NUMBER;
+   v_etapa_anterior ETAPA.NETAPA%TYPE;
+
+   CURSOR etapa_ciclista IS
+      SELECT e.netapa netapa, c.nombre nombre, m.color color
+      FROM etapa e, llevar l, maillot m, ciclista c 
+      WHERE e.netapa = l.netapa AND l.dorsal = c.dorsal AND l.codigo = m.codigo
+      GROUP BY e.netapa, c.nombre, m.color
+      ORDER BY e.netapa, c.nombre; 
+   
+   v_ciclista etapa_ciclista%ROWTYPE;
+
 BEGIN
-   FOR etc IN etapas_ciclistas LOOP
-      IF etapa_antigua NOT := etc.etapa THEN
-      	DBMS_OUTPUT.PUT_LINE(etc.etapa);
-	etapa_antigua := etc.etapa;
-	nombre_antiguo := etc.nombre;
-	num_maillots := 0;
-	v_color := '';
+   FOR v_ciclista IN etapa_ciclista LOOP
+      IF v_ciclista.netapa != v_etapa_anterior THEN
+         DBMS_OUTPUT.PUT_LINE(v_ciclista.netapa);
       END IF;
-      
-      IF nombre_antiguo = etc.nombre THEN
-         num_maillots := num_maillots +1;
-         v_color := v_color ||', '|| etc.color;
+
+      IF v_ciclista.nombre != v_ciclista_anterior THEN
+         DBMS_OUTPUT.PUT_LINE(v_ciclista_anterior || v_colores);
+		   DBMS_OUTPUT.PUT_LINE(v_num_maillots);
+         v_ciclista_anterior := v_ciclista.nombre;
+         v_num_maillots := 0;
       ELSE 
-         DBMS_OUTPUT.PUT_LINE(nombre_antiguo || ': ' || num_maillots ||' '|| v_color);
-         nombre_antiguo := '';
-         num_maillots := 0;
+         v_colores := v_colores || v_ciclista.color;
+         v_num_maillots := v_num_maillots +1;
       END IF;
-      nombre_antiguo := etc.nombre;
-   END LOOP; 
+   END LOOP;   
 END;
 
 
-
-DECLARE
-    numMaillot NUMBER := 3;
-	colorMaillot MAILLOT.COLOR%TYPE := 'morado';
-BEGIN
-    etapa_ciclista_num_colores(numMaillot, colorMaillot);
-END;
+--prueba
+begin
+    etapaCiclistas();
+end;

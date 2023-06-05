@@ -109,6 +109,8 @@ insert into maillot values('MMS','MÃ¡s sufrido','Estrellitas rojas',400000);
 insert into maillot values('MMV','Metas volantes','Rojo',400000);
 insert into maillot values('MRE','Regularidad','Verde',300000);
 insert into maillot values('MSE','Sprint especial','Rosa',300000);
+insert into maillot values('MOR','Sprint especial','morado',200000);--insertar maillot morado
+insert into maillot values('AZ','Sprint especial','azul',500000);--insertar maillot azul
 
 insert into llevar values(1,3,'MGE');
 insert into llevar values(1,4,'MGE');

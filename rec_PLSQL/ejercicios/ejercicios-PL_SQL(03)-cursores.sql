@@ -6,7 +6,7 @@
 2) Codificar un programa que muestre el nombre de cada departamento y el número de empleados que tiene.
  
 
-3) Escribir un programa que reciba una cadena como parámeto ('&cadena') y visualice el apellido y el número de empleado de todos los empleados cuyo apellido contenga la cadena especificada. Al finalizar visualizar el número de empleados mostrados.
+/*3) Escribir un programa que reciba una cadena como parámeto ('&cadena') y visualice el apellido y el número de empleado de todos los empleados cuyo apellido contenga la cadena especificada. Al finalizar visualizar el número de empleados mostrados.
 
 
 4) Escribir un programa que visualice el apellido y el salario de los cinco empleados que tienen el salario más alto.
