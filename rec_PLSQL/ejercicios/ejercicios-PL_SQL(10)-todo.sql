@@ -189,6 +189,11 @@ INSERT INTO ventas VALUES('V18','6', TO_DATE('02/11/97','DD/MM/YY'),2);
 INSERT INTO ventas VALUES('V19','2', TO_DATE('04/11/97','DD/MM/YY'),3);
 INSERT INTO ventas VALUES('V20','9', TO_DATE('04/12/97','DD/MM/YY'),3);
 
+
+
+
+
+
 /*a) Realiza un procedimiento que actualice la columna Stock de la tabla Productos a 
 partir de los registros de la tabla Ventas.
 
@@ -286,53 +291,147 @@ END;
 
 /*Problema 3
 
-Realiza un procedimiento llamado mostrar_usuarios_con rol que recibiendo como parámetro un rol nos devuelva los nombres de los usuarios a los 
-que se ha concedido dicho rol. Realiza otro procedimiento llamado mostrar_privilegios_del_rol que  recibe como parámetro un rol y muestra los 
+Realiza un procedimiento llamado mostrar_usuarios_con rol que recibiendo como parámetro un rol 
+nos devuelva los nombres de los usuarios a los que se ha concedido dicho rol. Realiza otro 
+procedimiento llamado mostrar_privilegios_del_rol que  recibe como parámetro un rol y muestra los 
 privilegios que lo componen.
 */
 
+CREATE TABLE usuarios(
+   nombre VARCHAR2(20),
+   rol VARCHAR2(20)
+);
+
+INSERT INTO usuarios VALUES('Paco','ESTUDIANTE');
+INSERT INTO usuarios VALUES('Miguel','PROFESOR');
+INSERT INTO usuarios VALUES('Gabriela','PROFESOR');
+INSERT INTO usuarios VALUES('Ernesto','PROFESOR');
+INSERT INTO usuarios VALUES('Marchante','ESTUDIANTE');
+INSERT INTO usuarios VALUES('Dani','ESTUDIANTE');
+INSERT INTO usuarios VALUES('Ruben','ESTUDIANTE');
+
+
+CREATE OR REPLACE PROCEDURE mostrar_usuarios_rol(v_rol VARCHAR2)
+IS
+	CURSOR usuarios_rol IS
+		SELECT nombre
+		FROM usuarios
+		WHERE rol = v_rol;
+	v_cursor usuarios_rol%ROWTYPE;
+BEGIN
+	FOR v_cursor IN usuarios_rol LOOP
+		DBMS_OUTPUT.PUT_LINE(v_cursor.nombre);
+    END LOOP;
+END;
 
 ---------------------------------------------------------------------------------------------------------------------
 
-Problema 4
+/*Problema 4
 
-/*Realizar una función que reciba un código de departamento y devuelva al programa que la 
+Realizar una función que reciba un código de departamento y devuelva al programa que la 
 llamó el nombre del mismo y el número de empleados que tiene.*/
+/*HACERLO CON PARAMETRO OUT*/
 
-CREATE OR REPLACE FUNCTION nombreDepart (cod_depart DEPART.DEPT_NO%TYPE)RETURN NUMBER
+CREATE OR REPLACE FUNCTION depart_numero(cod_depart DEPART.DEPT_NO%TYPE, num_emple OUT NUMBER)
+RETURN VARCHAR2 IS
+	v_nombre_depart DEPART.DNOMBRE%TYPE;
+BEGIN
+    SELECT d.dnombre INTO v_nombre_depart
+    FROM DEPART d 
+    WHERE d.DEPT_NO = cod_depart;
+
+	SELECT COUNT(e.APELLIDO) INTO num_emple
+    FROM DEPART d, EMPLE e 
+    WHERE d.DEPT_NO = e.DEPT_NO AND d.DEPT_NO = cod_depart 
+    GROUP BY d.DEPT_NO;
+
+	RETURN v_nombre_depart;
+END;
+
+/*CON UNA CONSULTA*/
+CREATE OR REPLACE FUNCTION nombreDepart(cod_depart DEPART.DEPT_NO%TYPE, nombreDepart1 OUT DEPART.DNOMBRE%TYPE)
+RETURN NUMBER
 IS 
    v_nombre_depart DEPART.DNOMBRE%TYPE;
-   v_numEmple NUMBER;
+	v_numEmple NUMBER;
 BEGIN
    SELECT d.dnombre, COUNT(e.EMP_NO) INTO v_nombre_depart, v_numEmple
    FROM DEPART d, EMPLE e 
    WHERE d.DEPT_NO = e.DEPT_NO AND d.DEPT_NO = cod_depart
    GROUP BY d.dnombre;
-
-   DBMS_OUTPUT.PUT_LINE(v_nombre_depart);
+	nombreDepart1:=v_nombre_depart;
    RETURN v_numEmple;
 END;
 
 
+
 --PRUEBA
+declare
+    v_nombre DEPART.DNOMBRE%TYPE;
 begin
-    DBMS_OUTPUT.PUT_LINE(nombreDepart(20));
+    DBMS_OUTPUT.PUT_LINE(nombreDepart(30,v_nombre));
+	DBMS_OUTPUT.PUT_LINE(v_nombre);
 end;
+
 
 
 ---------------------------------------------------------------------------------------------------------------------
 
-Problema 5
+/*Problema 5
 
-/*Realiza un trigger que cada vez que se inserten o modifiquen los datos de una venta, actualice de forma automática la columna stock de la 
-tabla productos y compruebe si el stock pasa a estar por debajo del umbral de pedido. Si se da este caso, debe insertarse un registro en la 
-tabla Ordenes de Pedido de forma que se pidan las unidades necesarias para restablecer el stock al triple del valor señalado en el umbral de 
-pedido.
+Realiza un trigger que cada vez que se inserten o modifiquen los datos de una venta, actualice de 
+forma automática la columna stock de la tabla productos y compruebe si el stock pasa a estar por debajo 
+del umbral de pedido. Si se da este caso, debe insertarse un registro en la tabla Ordenes de Pedido de 
+forma que se pidan las unidades necesarias para restablecer el stock al triple del valor señalado en el 
+umbral de pedido.
 
 Realiza un trigger que en el momento en que una orden de pedido se marque como servida se actualizara el stock del producto corrrespondiente.
 
 (Opcional) El trigger envía un correo electrónico a la dirección del proveedor correspondiente, registrada en la tabla Proveedores.
 */
+
+
+CREATE OR REPLACE TRIGGER checkStock 
+AFTER INSERT OR UPDATE 
+ON ventas
+FOR EACH ROW
+DECLARE
+    v_stock PRODUCTOS.STOCK%TYPE;
+BEGIN
+   SELECT stock INTO v_stock
+    FROM productos
+    WHERE codProducto = :NEW.CodProducto;
+   IF (v_stock-:NEW.UnidadesVendidas) >= 0 THEN
+      UPDATE Productos
+      SET stock = stock - :NEW.UnidadesVendidas
+      WHERE codProducto = :NEW.CodProducto;
+   ELSE 
+      INSERT INTO OrdenesPedido VALUES(:NEW.codProducto,(:NEW.UnidadesVendidas-v_stock)*3);
+   END IF;
+
+   IF INSERTING THEN
+      IF :NEW.UnidadesVendidas>stock THEN 
+         UPDATE productos
+         SET stock = v_stock - :NEW.UnidadesVendidas;
+      END IF;
+   END IF;
+END;
+
+
+
+BEGIN
+    UPDATE VENTAS
+    SET UnidadesVendidas = 40
+    WHERE CodProducto = '3';
+END;
+
+insert into ventas values('V100',3,DATE'1997-10-02',40);
+
+
+
+
+
+
 ---------------------------------------------------------------------------------------------------------------------
 
 /*Problema 6
@@ -341,19 +440,61 @@ Realizar un trigger que mantenga actualizada la columna CosteSalarial, con la su
 salarios y comisiones de los empleados de dichos departamentos reflejando cualquier cambio 
 que se produzca en la tabla empleados.*/
 
-ALTER TABLE DEPART ADD costeSalario NUMBER;
+/*tablas mutantes
+1. te inventas una tabla auxiliar
+2. creas un trigger de instruccion before -> va a insertar en la tabla auxiliar para guardar los datos que puedo usar
+3. se ejecuta antes trigger de instruccion que los de fila
+no hay problemas de tablas mutantes en los triggers de instruccion*/
 
-CREATE OR REPLACE TRIGGER nuevoSalario /*no funciona*/
-AFTER UPDATE OR INSERT ON EMPLE
-FOR EACH ROW
+CREATE TABLE tabla_aux(
+    DEPT_NO NUMBER,
+    SalarioDepart NUMBER
+);
+
+--TRIGGER DE INSTRUCCION BEFORE
+CREATE OR REPLACE TRIGGER insertarSalario
+BEFORE INSERT OR UPDATE  
+ON EMPLE 
+DECLARE 
+   CURSOR salarioEmple IS --EN UN TRIGGER DE INSTRUCCION NO HAY ERROR DE TABLAS MUTANTES
+      SELECT e.DEPT_NO dept, SUM(e.salario) salarioDept
+      FROM EMPLE e 
+      GROUP BY e.DEPT_NO
+      ORDER BY e.DEPT_NO;
+   departamento salarioEmple%ROWTYPE;
 BEGIN
-   UPDATE DEPART d
-   SET d.costeSalario = (SELECT SUM(e.salario)
-                         FROM EMPLE e
-                         WHERE e.DEPT_NO = :NEW.DEPT_NO
-                         GROUP BY e.DEPT_NO)
-   WHERE d.DEPT_NO = :NEW.DEPT_NO;
+   delete FROM tabla_aux WHERE tabla_aux.DEPT_NO = departamento.dept;
+   delete FROM tabla_aux WHERE tabla_aux.salario = departamento.salarioDept;
+   INSERT INTO tabla_aux VALUES(departamento.dept, departamento.salarioDept);
 END;
+
+/*NEW Y OLD SOLO SE PUEDE USAR CON UPDATE*/
+
+--TRIGGER DE FILA AFTER QUE INSERTE EN LA COLUMNA DE LA NUEVA TABLA DE DEPART PARA NO TENER QUE MIRAR LA TABLA QUE ESTOY ACTUALIZANDO
+CREATE OR REPLACE TRIGGER insertarCosteSalarial 
+AFTER INSERT OR UPDATE
+ON EMPLE 
+declare /*accedo a la tabla aux*/
+BEGIN
+   UPDATE DEPART 
+   SET costeSalario = 
+END;
+
+
+/*
+orden de ejecucion de Triggers
+
+- Primero disparadores de tipo BEFORE de tipo instrucción
+- Disparadores de tipo BEFORE por cada fila
+- Se ejecuta la propia orden que desencadenó al trigger.
+- Disparadores de tipo AFTER con nivel de fila.
+- Disparadores de tipo AFTER con nivel de instrucción.
+*/
+
+/*
+el :NEW y :OLD solo se usa con UPDATE
+*/
+
 
 
 ---------------------------------------------------------------------------------------------------------------------
